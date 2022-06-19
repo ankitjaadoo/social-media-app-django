@@ -9,4 +9,8 @@ class SNPostsSerializer(serializers.ModelSerializer):
  
 class SNPostValidator(forms.Form) :
     username = forms.CharField()
-    tweet_text = forms.CharField()
+    post_text = forms.CharField()
+
+class CommentValidator(forms.Form):
+    username = forms.CharField()
+    reply_text = forms.CharField()

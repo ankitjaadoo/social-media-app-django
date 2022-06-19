@@ -7,7 +7,7 @@ from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from Posts.serializer import SNPostsSerializer,SNPostValidator
+from Posts.serializer import SNPostsSerializer,SNPostValidator, CommentValidator
 from django.core.paginator import Paginator
 import json
 import logging
@@ -33,18 +33,18 @@ def CreatePost(request):
     '''
     if request.method == "POST":
         username = request.query_params.get('username')
-        text = request.query_params.get('tweet_text')
+        text = request.query_params.get('post_text')
         if is_autherized(request,username):
             validate = SNPostValidator(request.query_params,request.FILES)
             if not validate.is_valid():
                 error = {'Error_code': status.HTTP_400_BAD_REQUEST,
-                            'Error_Message': "Invalid username or tweet_text"}
+                            'Error_Message': "Invalid username or post_text"}
                 logger.error(error)                    
                 return Response(json.dumps(error), status=status.HTTP_400_BAD_REQUEST)
 
             try:
                 user = get_user_obj(username)
-                new_tweet = SNPost(username=user,tweet_text=text)
+                new_tweet = SNPost(username=user,post_text=text)
                 new_tweet.save()
                 serializer = SNPostsSerializer(new_tweet)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -111,7 +111,7 @@ def DeletePost(request,post_id=None):
             return Response(error, status=status.HTTP_400_BAD_REQUEST)       
     except Exception as e:
         error = {'Error_code': status.HTTP_400_BAD_REQUEST,
-                    'Error_Message': "This tweet no longer exists"}
+                    'Error_Message': "This post no longer exists"}
         logger.error(e)    
         return Response(json.dumps(error), status=status.HTTP_400_BAD_REQUEST)     
 
@@ -135,7 +135,7 @@ def ShowPost(request,post_id=None):
     except Exception as e:
         logger.error(e)
         error = {'Error_code': status.HTTP_400_BAD_REQUEST,
-                    'Error_Message': "This tweet no longer exists"}
+                    'Error_Message': "This post no longer exists"}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -147,7 +147,7 @@ def Like(request,post_id=None):
     Output: post object that was liked
     '''
     try:
-        user = request.query_params.get('username',None)
+        user = request.query_params.get('username')
         validate = SNPostValidator(request.query_params,request.FILES)
         if not validate.is_valid():
             error = {'Error_code': status.HTTP_400_BAD_REQUEST,
@@ -167,7 +167,7 @@ def Like(request,post_id=None):
             return Response(error, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         error = {'Error_code': status.HTTP_400_BAD_REQUEST,
-                        'Error_Message': "Error liking the tweet!"}
+                        'Error_Message': "Error liking the post!"}
         logger.error(e)                    
         return Response(json.dumps(error), status=status.HTTP_400_BAD_REQUEST) 
 
@@ -200,11 +200,38 @@ def Search(request):
                             'Error_Message': "Authentication failed. Please login"}
         return Response(error, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def all_tweets(request):
+@api_view(['PUT'])
+def Comment(request,post_id=None):
     '''
-    Debugging
+    Purpose: Reply to the post with the id in the URL
+    Input: username (mandatory) <str> Account user
+           comment_text (mandatory) <str> Reply  
+    Output: Commented post object
     '''
-    posts = SNPost.objects.all()
-    serializer = SNPostsSerializer(posts,many=True)
-    return Response(serializer.data,status=status.HTTP_200_OK)
+    try:
+        user = request.query_params.get('username',None)
+        comment = request.query_params.get('comment_text',None)
+        validate = CommentValidator(request.query_params,request.FILES)
+        if not validate.is_valid():
+            error = {'Error_code': status.HTTP_400_BAD_REQUEST,
+                        'Error_Message': "Invalid username or comment_text"}
+            logger.error(error)                    
+            return Response(json.dumps(error), status=status.HTTP_400_BAD_REQUEST)
+        if is_autherized(request,user):
+            user =get_user_obj(user)
+            comment_post = SNPost(username=user,post_text=comment)
+            comment_post.save()
+            post = SNPost.objects.get(id=post_id)
+            post.comment.add(comment_post)
+            post.save()
+            serializer = SNPostsSerializer(comment_post)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            error = {'Error_code': status.HTTP_400_BAD_REQUEST,
+                                'Error_Message': "Authentication failed. Please login"}
+            return Response(error, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        error = {'Error_code': status.HTTP_400_BAD_REQUEST,
+                        'Error_Message': "Error saving the comment"}
+        logger.error(e)                    
+        return Response(json.dumps(error), status=status.HTTP_400_BAD_REQUEST)
