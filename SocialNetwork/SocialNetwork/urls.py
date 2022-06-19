@@ -22,4 +22,6 @@ schema_view = get_swagger_view(title='Social Network API')
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('docs/',schema_view),
+    path('', include('SNUsers.urls')),
+    path('post/', include('Posts.urls')),
 ]
