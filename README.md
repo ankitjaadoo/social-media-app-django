@@ -10,6 +10,7 @@ This Project is all about building a Backend API for a Social Network site using
 - change directory to <virtual_environment_name>\Scripts and enter activate to activate the virtual environment.
 - Run the command pip install -r requirements.txt to install all the necessary dependencies/libraries for running this application.
 - Finally, to run the application, run the command python SocialNetwork/manage.py runserver
+- Test cases can be run by the following command: python SocialNetwork/manage.py test
 
 ** Functionalities **
 

@@ -10,5 +10,6 @@ class SNPost(models.Model):
     username = models.ForeignKey(SNUser,on_delete=models.CASCADE)
     post_text = models.CharField(max_length=100,null=True)
     time = models.CharField(max_length=50,default=get_cur_time)
-    like = models.ManyToManyField(SNUser,related_name="liked_users")   
+    like = models.ManyToManyField(SNUser,related_name="liked_users")
+    reply = models.ManyToManyField("self")    
     comment = models.CharField(max_length=100,null=True)
