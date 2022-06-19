@@ -2,6 +2,15 @@
 
 This Project is all about building a Backend API for a Social Network site using Django REST Framework
 
+** Project Setup **
+
+- Clone the repository
+- move inside the cloned project folder, e.g. social-networking-app-django in this case
+- Create the Virtual environment in Python using the following command - python -m venv <virtual_environment_name> e.g. python -m venv .env
+- change directory to <virtual_environment_name>\Scripts and enter activate to activate the virtual environment.
+- Run the command pip install -r requirements.txt to install all the necessary dependencies/libraries for running this application.
+- Finally, to run the application, run the command python SocialNetwork/manage.py runserver
+
 ** Functionalities **
 
 - User Sign Up
